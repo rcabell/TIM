@@ -32,6 +32,18 @@ add_library(tim STATIC
 )
 add_library(TIM::tim ALIAS tim)
 
+# An AMReX built with a GPU backend expands AMREX_GPU_HOST_DEVICE and friends
+# (AMReX_GpuQualifiers.H) to literal __host__ __device__ tokens unconditionally,
+# which only a CUDA-aware compiler understands. Any TU including AMReX headers
+# must then itself be compiled as CUDA. AMReX_CUDA_FOUND is baked into
+# AMReXConfig.cmake at AMReX's own install time, so this has no effect -- and
+# adds no CUDA Toolkit requirement -- for a CPU-only AMReX.
+if(AMReX_CUDA_FOUND)
+  enable_language(CUDA)
+  include(AMReXTargetHelpers)
+  setup_target_for_cuda_compilation(tim)
+endif()
+
 target_include_directories(tim PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include/tim>)
